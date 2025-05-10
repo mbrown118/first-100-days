@@ -29,35 +29,146 @@ stocks <- stocks %>%
 
 
 ```{r}
-
 tour_start <- as_date("2023-03-17")
 
 eras_tour_start <- stocks %>%
-  filter(date >= tour_start & date <= tour_start + days(250)) %>%
+  filter(date >= tour_start & date <= tour_start + days(200)) %>%
   mutate(
     tour_start_close = close_last[date == tour_start],
     close_normed = (close_last / tour_start_close) * 100,
-    days_since_tour_start = as.numeric(date - tour_start)
-  )
+    days_since = as.numeric(date - tour_start),
+    group = "Eras Tour Start"
+  ) %>%
+  select(group, days_since, close_normed)
 
 
 ticket_sales_start_gen <- as_date("2022-11-18")
 
 eras_tour_ticket_sale_start <- stocks %>%
   filter(
-    date >= ticket_sales_start_gen & date <= ticket_sales_start_gen + days(250)
+    date >= ticket_sales_start_gen & date <= ticket_sales_start_gen + days(200)
   ) %>%
   mutate(
     ticket_sales_start_close = close_last[date == ticket_sales_start_gen],
     close_normed = (close_last / ticket_sales_start_close) * 100,
-    days_since_ticket_sale = as.numeric(date - ticket_sales_start_gen)
-  )
+    days_since = as.numeric(date - ticket_sales_start_gen),
+    group = "Eras Tour Ticket Sale Start"
+  ) %>%
+  select(group, days_since, close_normed)
 
 ```
 
 ```{r}
+trump_1st_election <- as_date("2016-11-08")
+
+trump_1st <- stocks %>%
+  filter(
+    date >= trump_1st_election & date <= trump_1st_election + days(200)
+  ) %>%
+  mutate(
+    trump_1st_election_close = close_last[date == trump_1st_election],
+    close_normed = (close_last / trump_1st_election_close) * 100,
+    days_since = as.numeric(date - trump_1st_election),
+    group = "Trump 1st"
+  ) %>%
+  select(group, days_since, close_normed)
+
+```
+
+```{r}
+trump_2nd_election <- as_date("2024-11-05")
+
+trump_2nd <- stocks %>%
+  filter(
+    date >= trump_2nd_election & date <= trump_2nd_election + days(200)
+  ) %>%
+  mutate(
+    trump_2nd_election_close = close_last[date == trump_2nd_election],
+    close_normed = (close_last / trump_2nd_election_close) * 100,
+    days_since = as.numeric(date - trump_2nd_election),
+    group = "Trump 2nd"
+  ) %>%
+  select(group, days_since, close_normed)
+
+```
+
+```{r}
+biden_election <- as_date("2020-11-03")
+
+biden <- stocks %>%
+  filter(
+    date >= biden_election & date <= biden_election + days(200)
+  ) %>%
+  mutate(
+    biden_election_close = close_last[date == biden_election],
+    close_normed = (close_last / biden_election_close) * 100,
+    days_since = as.numeric(date - biden_election),
+    group = "Biden"
+  ) %>%
+  select(group, days_since, close_normed)
+
+```
+
+
+```{r}
+terms_combined <- bind_rows(eras_tour_start, trump_1st, trump_2nd, biden)
+
+```
+
+
+```{r}
+color_palette <- c(
+  "Biden" = "#666666",
+  "Trump 1st" = "#b3b3b3",
+  "Trump 2nd" = "#fba493",
+  "Eras Tour Start" = "#982aa6"
+)
+
+data_ends <- terms_combined %>%
+  group_by(group) %>%
+  top_n(1, days_since)
+
+nonhighlight <- c("Biden", "Trump 1st", "Trump 2nd")
+
+
+terms_combined %>%
+  filter(!group %in% nonhighlight) %>%
+  ggplot(aes(x = days_since, y = close_normed, color = group)) +
+  geom_line(
+    data = terms_combined %>% filter(group %in% nonhighlight),
+  ) +
+  geom_line(color = "white", size = 1.5) +
+  geom_line(size = .9) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  ) +
+  scale_y_continuous(limits = c(85, 130)) +
+  scale_x_continuous(limits = c(0, 240)) +
+  scale_color_manual(values = color_palette) +
+  geom_hline(yintercept = 100, color = "black", size = .5) +
+  annotate(
+    geom = "point",
+    x = 0,
+    y = 100,
+    size = 2,
+    shape = 21,
+    fill = "black"
+  ) +
+  xlab("Days since election/Glendale night 1") +
+  ylab("S&P 500 at close, election day = 100") +
+  geom_text(aes(label = group, hjust = -0.2), data = data_ends)
+
+# ggplotly(p)
+
+```
+
+
+```{r}
 eras_tour_start %>%
-  ggplot(aes(x = days_since_tour_start, y = close_normed)) +
+  ggplot(aes(x = days_since, y = close_normed)) +
   geom_line(color = "#a64477") +
   labs(title = "S&P 500 over the first 250 days of the Eras Tour") +
   theme_minimal() +
