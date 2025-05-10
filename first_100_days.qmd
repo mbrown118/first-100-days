@@ -1,0 +1,25 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{r}
+library(readr)
+library(lubridate)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+stocks <- read_csv("data/sp500.csv") %>% 
+    clean_names()
+```
+
+
+```{r}
+stocks <- stocks %>% 
+    mutate(date = mdy(date))
+```
