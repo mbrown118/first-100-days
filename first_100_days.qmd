@@ -161,6 +161,12 @@ terms_combined %>%
   ylab("S&P 500 at close, election day = 100") +
   geom_text(aes(label = group, hjust = -0.2), data = data_ends)
 
+
+ggsave("first_200.png", height = 5,
+  width = 8,
+  units = "in",
+  dpi = 300))
+
 # ggplotly(p)
 
 ```
