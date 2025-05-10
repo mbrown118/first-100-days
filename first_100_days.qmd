@@ -3,7 +3,6 @@ title: "Untitled"
 format: html
 ---
 
-
 ```{r}
 library(readr)
 library(lubridate)
@@ -14,14 +13,18 @@ library(ggplot2)
 
 
 ```{r}
-stocks <- read_csv("data/sp500.csv") %>% 
-    clean_names()
+
+## https://www.nasdaq.com/market-activity/index/spx/historical?page=1&rows_per_page=10&timeline=y5
+
+stocks <- read_csv("data/sp500.csv") %>%
+  clean_names()
+
 ```
 
 
 ```{r}
-stocks <- stocks %>% 
-    mutate(date = mdy(date))
+stocks <- stocks %>%
+  mutate(date = mdy(date))
 ```
 
 
@@ -29,23 +32,46 @@ stocks <- stocks %>%
 
 tour_start <- as_date("2023-03-17")
 
-eras_tour_start <- stocks %>% 
-    filter(date >= tour_start & date <=  tour_start + days(250)) %>% 
-    mutate(
-    tour_start_close = close_last[date == tour_start], 
+eras_tour_start <- stocks %>%
+  filter(date >= tour_start & date <= tour_start + days(250)) %>%
+  mutate(
+    tour_start_close = close_last[date == tour_start],
     close_normed = (close_last / tour_start_close) * 100,
-    days_since_reference = as.numeric(date - tour_start)
+    days_since_tour_start = as.numeric(date - tour_start)
   )
 
 
 ticket_sales_start_gen <- as_date("2022-11-18")
 
-eras_tour_ticket_sale_start <- stocks %>% 
-    filter(date >= ticket_sales_start_gen & date <=  ticket_sales_start_gen + days(250)) %>% 
-    mutate(
-    ticket_sales_start_close = close_last[date == ticket_sales_start_gen], 
+eras_tour_ticket_sale_start <- stocks %>%
+  filter(
+    date >= ticket_sales_start_gen & date <= ticket_sales_start_gen + days(250)
+  ) %>%
+  mutate(
+    ticket_sales_start_close = close_last[date == ticket_sales_start_gen],
     close_normed = (close_last / ticket_sales_start_close) * 100,
-    days_since_reference = as.numeric(date - ticket_sales_start_gen)
+    days_since_ticket_sale = as.numeric(date - ticket_sales_start_gen)
   )
 
+```
+
+```{r}
+eras_tour_start %>%
+  ggplot(aes(x = days_since_tour_start, y = close_normed)) +
+  geom_line(color = "#a64477") +
+  labs(title = "S&P 500 over the first 250 days of the Eras Tour") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(85, 130))
+```
+
+
+```{r}
+eras_tour_ticket_sale_start %>%
+  ggplot(aes(x = days_since_ticket_sale, y = close_normed)) +
+  geom_line(color = "#a64477") +
+  labs(
+    title = "S&P 500 over the first 250 days from start of ticket sales of the Eras Tour"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(limits = c(85, 130))
 ```
