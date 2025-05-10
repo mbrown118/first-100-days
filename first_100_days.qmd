@@ -23,3 +23,29 @@ stocks <- read_csv("data/sp500.csv") %>%
 stocks <- stocks %>% 
     mutate(date = mdy(date))
 ```
+
+
+```{r}
+
+tour_start <- as_date("2023-03-17")
+
+eras_tour_start <- stocks %>% 
+    filter(date >= tour_start & date <=  tour_start + days(250)) %>% 
+    mutate(
+    tour_start_close = close_last[date == tour_start], 
+    close_normed = (close_last / tour_start_close) * 100,
+    days_since_reference = as.numeric(date - tour_start)
+  )
+
+
+ticket_sales_start_gen <- as_date("2022-11-18")
+
+eras_tour_ticket_sale_start <- stocks %>% 
+    filter(date >= ticket_sales_start_gen & date <=  ticket_sales_start_gen + days(250)) %>% 
+    mutate(
+    ticket_sales_start_close = close_last[date == ticket_sales_start_gen], 
+    close_normed = (close_last / ticket_sales_start_close) * 100,
+    days_since_reference = as.numeric(date - ticket_sales_start_gen)
+  )
+
+```
